@@ -265,6 +265,26 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             return ok(basicDetails(account));
         }
 
+        // delete account function
+        function deleteAccount() {
+            if (!isAuthenticated()) return unauthorized();
+
+            let account = accounts.find(x => x.id === idFromUrl());
+
+            // user accounts can delete own account and admin accounts can delete any account
+            if (account.id !== currentAccount().id && !isAuthorized(Role.Admin)) {
+                return unauthorized();
+            }
+
+            // delete account then save
+            accounts = accounts.filter(x => x.id !== idFromUrl());
+            localStorage.setItem(accountsKey, JSON.stringify(accounts));
+            return ok();
+        }
+
+        // helper functions
+
+
 
     }
 }
