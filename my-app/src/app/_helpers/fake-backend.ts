@@ -223,5 +223,20 @@ export class FakeBackendInterceptor implements HttpInterceptor {
 
             return ok();
         }
+
+        // getAccounts function
+        function getAccounts() {
+            if (!isAuthenticated()) return unauthorized();
+
+            let account = accounts.find(x => x.id === idFromUrl());
+
+            // user accounts can get own profile and admin accounts cam get all profiles
+            if (account.id !== currentAccount().id && !isAuthorized(Role.Admin)) {
+                return unauthorized();
+            }
+
+            return ok(basicDetails(account));
+        }
+
     }
 }
