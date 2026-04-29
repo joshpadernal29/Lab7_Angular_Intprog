@@ -155,5 +155,19 @@ export class FakeBackendInterceptor implements HttpInterceptor {
 
             return ok();
         }
+
+        // verify-email function
+        function verifyEmail() {
+            const { token } = body;
+            const account = accounts.find(x => !!x.verificationToken && x.verificationToken === token);
+
+            if (!account) return Error('Verification failed');
+
+            // set verification flag to true if token is valid
+            account.isVerified = true;
+            localStorage.setItem(accountsKey, JSON.stringify(accounts));
+
+            return ok();
+        }
     }
 }
