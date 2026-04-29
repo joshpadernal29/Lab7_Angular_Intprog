@@ -197,12 +197,29 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             return ok();
         }
 
-        // vlaidate resetToken function
+        // validate resetToken function
         function validateResetToken() {
             const { token } = body;
             const account = accounts.find(x => !!x.resetToken && x.resetToken === token && new Date() < new Date(x.resetTokenExpires));
 
             if (!account) return Error('Invalid Token');
+
+            return ok();
+        }
+
+        // resetPassword function
+        function resetPassword() {
+            const { token, password } = body;
+            const account = accounts.find(x => !!x.resetToken && x.resetToken === token && new Date() < new Date(x.resetTokenExpires));
+
+            if (!account) return Error('Invalid Token');
+
+            //update password and remove reset token
+            account.password = password;
+            account.isVerified = true;
+            delete account.resetToken;
+            delete account.resetTokenExpires;
+            localStorage.setItem(accountsKey, JSON.stringify(accounts));
 
             return ok();
         }
