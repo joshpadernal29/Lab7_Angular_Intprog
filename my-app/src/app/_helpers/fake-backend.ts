@@ -238,5 +238,33 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             return ok(basicDetails(account));
         }
 
+        // updateAccount function
+        function updateAccount() {
+            if (!isAuthenticated()) return unauthorized();
+
+            let params = body;
+            let account = accounts.find(x => x.id === idFromUrl());
+
+            // user accounts can update own profile and admin accounts can update all profiles
+            if (account.id !== currentAccount().id && !isAuthorized(Role.Admin)) {
+                return unauthorized();
+            }
+
+            // only update password if included
+            if (!params.password) {
+                delete params.password;
+            }
+
+            // don't save confirm password
+            delete params.confirmPassword;
+
+            // update and save account
+            Object.assign(account, params);
+            localStorage.setItem(accountsKey, JSON.stringify(accounts));
+
+            return ok(basicDetails(account));
+        }
+
+
     }
 }
