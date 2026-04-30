@@ -283,8 +283,29 @@ export class FakeBackendInterceptor implements HttpInterceptor {
         }
 
         // helper functions
+        function ok(body?: any) {
+            return of(new HttpResponse({ status: 200, body }))
+                .pipe(delay(500)); // delay observable to simulate server api call
+        }
 
+        function error(message: string) {
+            return throwError(() => ({ error: { message } }))
+                .pipe(materialize(), delay(500), dematerialize()); // call materialize and dematerialize
+        }
 
+        function unauthorized() {
+            return throwError(() => ({ status: 401, error: { message: 'Unauthorized' } }))
+                .pipe(materialize(), delay(500), dematerialize());
+        }
+
+        function basicDetails(account: any) {
+            const { id, title, firstName, lastName, email, role, dateCreated, isVerified } = account;
+            return { id, title, firstName, lastName, email, role, dateCreated, isVerified };
+        }
+
+        function isAuthenticated() {
+            return !!currentAccount();
+        }
 
     }
 }
