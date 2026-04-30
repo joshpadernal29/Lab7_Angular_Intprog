@@ -161,7 +161,7 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             const { token } = body;
             const account = accounts.find(x => !!x.verificationToken && x.verificationToken === token);
 
-            if (!account) return Error('Verification failed');
+            if (!account) return error('Verification failed');
 
             // set verification flag to true if token is valid
             account.isVerified = true;
@@ -202,7 +202,7 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             const { token } = body;
             const account = accounts.find(x => !!x.resetToken && x.resetToken === token && new Date() < new Date(x.resetTokenExpires));
 
-            if (!account) return Error('Invalid Token');
+            if (!account) return error('Invalid Token');
 
             return ok();
         }
@@ -212,7 +212,7 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             const { token, password } = body;
             const account = accounts.find(x => !!x.resetToken && x.resetToken === token && new Date() < new Date(x.resetTokenExpires));
 
-            if (!account) return Error('Invalid Token');
+            if (!account) return error('Invalid Token');
 
             //update password and remove reset token
             account.password = password;
@@ -307,5 +307,35 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             return !!currentAccount();
         }
 
+        function generateJwtToken(account: any) {
+            // create token that expires in 15 minutes
+            const tokenPayload = {
+                exp: Math.round(new Date(Date.now() + 15 * 60 * 1000).getTime() / 1000),
+                id: account.id
+            }
+            return `fake-jwt-token.${btoa(JSON.stringify(tokenPayload))}`;
+        }
+
+        function generateRefreshToken() {
+            const token = new Date().getTime().toString();
+
+            // add token cookie that expires in 7 days
+            const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString();
+            document.cookie = `fakeRefreshToken=${token}; expires=${expires}; path=/;`;
+
+            return token;
+        }
+
+        function getRefreshToken() {
+            // get refresh token from cookie
+            return (document.cookie.split(';').find(x => x.includes('fakeRefreshToken')) || '=').split('=')[1];
+        }
     }
 }
+
+export let fakeBackendProvider = {
+    // use fakebackend in place of http service for backend-less development
+    provide: HTTP_INTERCEPTORS,
+    useClass: FakeBackendInterceptor,
+    multi: true
+};
