@@ -1,7 +1,7 @@
 <!-- DETAILS COMPONENT -->
 <h1>My Profile</h1>
 <p *ngIf="account">
-    <strong>Name: </strong> {{account.title}} {{account.firstname}} {{account.lastname}} <br />
-    <strong>Email: </strong> {{account.email}}
+    <strong>Name: </strong> {{account?.title}} {{account?.firstname}} {{account?.lastname}} <br />
+    <strong>Email: </strong> {{account?.email}}
 </p>
 <p><a router-link="update">Update Profile</a></p>
