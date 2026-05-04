@@ -28,8 +28,8 @@ export class UpdateComponent implements OnInit {
 
         this.form = this.formBuilder.group({
             title: [this.account.title, Validators.required],
-            firstName: [this.account.firstName, Validators.required],
-            lastName: [this.account.lastName, Validators.required],
+            firstName: [this.account.firstname, Validators.required],
+            lastName: [this.account.lastname, Validators.required],
             email: [this.account.email, [Validators.required, Validators.email]],
             password: ['', [Validators.minLength(6)]],
             confirmPassword: ['']
@@ -52,7 +52,7 @@ export class UpdateComponent implements OnInit {
         }
 
         this.submitting = true;
-        this.accountService.update(this.account.id, this.form.value)
+        this.accountService.update(this.account.id!, this.form.value)
             .pipe(first())
             .subscribe({
                 next: () => {
