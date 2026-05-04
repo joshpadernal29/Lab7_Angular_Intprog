@@ -56,23 +56,23 @@ export class FakeBackendInterceptor implements HttpInterceptor {
         }
 
         // route functions
-        // account authentication function
+
         function authenticate() {
             const { email, password } = body;
             const account = accounts.find(x => x.email === email && x.password === password && x.isVerified);
 
-            if (!account) return Error('Email or Password is Incorrect!');
+            if (!account) return error('Email or Password is Incorrect!');
 
             // add refresh tken to the account 
-            account.refreshToken.push(generateRefreshToken());
+            account.refreshTokens.push(generateRefreshToken());
             localStorage.setItem(accountsKey, JSON.stringify(accounts));
 
             return ok({
                 ...basicDetails(account),
-                jwtToken: generateJWTToken(account)
+                jwtToken: generateJwtToken(account)
             });
         }
-        // refresh token function
+
         function refreshToken() {
             const refreshToken = getRefreshToken();
 
@@ -92,7 +92,7 @@ export class FakeBackendInterceptor implements HttpInterceptor {
                 jwtToken: generateJwtToken(account)
             });
         }
-        // revoke token function
+
         function revokeToken() {
             if (!isAuthenticated()) return unauthorized();
 
@@ -105,7 +105,7 @@ export class FakeBackendInterceptor implements HttpInterceptor {
 
             return ok();
         }
-        // register account function
+
         function register() {
             const account = body;
 
@@ -113,11 +113,11 @@ export class FakeBackendInterceptor implements HttpInterceptor {
                 // display email already registered "email" in alert
                 setTimeout(() => {
                     alertService.info(`
-                <h4>Email Already Registered</h4>
-                <p>Your email ${account.email} is already registered.</p>
-                <p>If you don't know your password please visit the <a href="${location.origin}/account/forgot-password">forgot password</a> page.</p>
-                <div><strong>NOTE:</strong> The fake backend displayed this "email" so you can test without an api. A real backend would send a real email.</div>
-            `, { autoClose: false });
+                        <h4>Email Already Registered</h4>
+                        <p>Your email ${account.email} is already registered.</p>
+                        <p>If you don't know your password please visit the <a href="${location.origin}/account/forgot-password">forgot password</a> page.</p>
+                        <div><strong>NOTE:</strong> The fake backend displayed this "email" so you can test without an api. A real backend would send a real email.</div>
+                    `, { autoClose: false });
                 }, 100);
 
                 // always return ok() response to prevent email enumeration
@@ -136,7 +136,6 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             account.verificationToken = new Date().getTime().toString();
             account.isVerified = false;
             account.refreshTokens = [];
-
             delete account.confirmPassword;
             accounts.push(account);
             localStorage.setItem(accountsKey, JSON.stringify(accounts));
@@ -145,18 +144,17 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             setTimeout(() => {
                 const verifyUrl = `${location.origin}/account/verify-email?token=${account.verificationToken}`;
                 alertService.info(`
-            <h4>Verification Email</h4>
-            <p>Thanks for registering!</p>
-            <p>Please click the below link to verify your email address:</p>
-            <p><a href="${verifyUrl}">${verifyUrl}</a></p>
-            <div><strong>NOTE:</strong> The fake backend displayed this "email" so you can test without an api. A real backend would send a real email.</div>
-        `, { autoClose: false });
+                    <h4>Verification Email</h4>
+                    <p>Thanks for registering!</p>
+                    <p>Please click the below link to verify your email address:</p>
+                    <p><a href="${verifyUrl}">${verifyUrl}</a></p>
+                    <div><strong>NOTE:</strong> The fake backend displayed this "email" so you can test without an api. A real backend would send a real email.</div>
+                `, { autoClose: false });
             }, 1000);
 
             return ok();
         }
 
-        // verify-email function
         function verifyEmail() {
             const { token } = body;
             const account = accounts.find(x => !!x.verificationToken && x.verificationToken === token);
@@ -170,7 +168,6 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             return ok();
         }
 
-        // forgotPassword function
         function forgotPassword() {
             const { email } = body;
             const account = accounts.find(x => x.email === email);
@@ -187,30 +184,34 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             setTimeout(() => {
                 const resetUrl = `${location.origin}/account/reset-password?token=${account.resetToken}`;
                 alertService.info(`
-            <h4>Reset Password Email</h4>
-            <p>Please click the below link to reset your password, the link will be valid for 1 day:</p>
-            <p><a href="${resetUrl}">${resetUrl}</a></p>
-            <div><strong>NOTE:</strong> The fake backend displayed this "email" so you can test without an api. A real backend would send a real email.</div>
-        `, { autoClose: false });
+                    <h4>Reset Password Email</h4>
+                    <p>Please click the below link to reset your password, the link will be valid for 1 day:</p>
+                    <p><a href="${resetUrl}">${resetUrl}</a></p>
+                    <div><strong>NOTE:</strong> The fake backend displayed this "email" so you can test without an api. A real backend would send a real email.</div>
+                `, { autoClose: false });
             }, 1000);
 
             return ok();
         }
 
-        // validate resetToken function
         function validateResetToken() {
             const { token } = body;
-            const account = accounts.find(x => !!x.resetToken && x.resetToken === token && new Date() < new Date(x.resetTokenExpires));
+            const account = accounts.find(x =>
+                !!x.resetToken && x.resetToken === token &&
+                new Date() < new Date(x.resetTokenExpires)
+            );
 
             if (!account) return error('Invalid Token');
 
             return ok();
         }
 
-        // resetPassword function
         function resetPassword() {
             const { token, password } = body;
-            const account = accounts.find(x => !!x.resetToken && x.resetToken === token && new Date() < new Date(x.resetTokenExpires));
+            const account = accounts.find(x =>
+                !!x.resetToken && x.resetToken === token &&
+                new Date() < new Date(x.resetTokenExpires)
+            );
 
             if (!account) return error('Invalid Token');
 
@@ -224,13 +225,17 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             return ok();
         }
 
-        // getAccounts function
         function getAccounts() {
+            if (!isAuthenticated()) return unauthorized();
+            return ok(accounts.map(x => basicDetails(x)));
+        }
+
+        function getAccountById() {
             if (!isAuthenticated()) return unauthorized();
 
             let account = accounts.find(x => x.id === idFromUrl());
 
-            // user accounts can get own profile and admin accounts cam get all profiles
+            // user accounts can get own profile and admin accounts can get all profiles
             if (account.id !== currentAccount().id && !isAuthorized(Role.Admin)) {
                 return unauthorized();
             }
@@ -238,7 +243,26 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             return ok(basicDetails(account));
         }
 
-        // updateAccount function
+        function createAccount() {
+            if (!isAuthorized(Role.Admin)) return unauthorized();
+
+            const account = body;
+            if (accounts.find(x => x.email === account.email)) {
+                return error(`Email ${account.email} is already registered`);
+            }
+
+            // assign account id and a few other properties then save
+            account.id = newAccountId();
+            account.dateCreated = new Date().toISOString();
+            account.isVerified = true;
+            account.refreshTokens = [];
+            delete account.confirmPassword;
+            accounts.push(account);
+            localStorage.setItem(accountsKey, JSON.stringify(accounts));
+
+            return ok();
+        }
+
         function updateAccount() {
             if (!isAuthenticated()) return unauthorized();
 
@@ -254,7 +278,6 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             if (!params.password) {
                 delete params.password;
             }
-
             // don't save confirm password
             delete params.confirmPassword;
 
@@ -265,7 +288,6 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             return ok(basicDetails(account));
         }
 
-        // delete account function
         function deleteAccount() {
             if (!isAuthenticated()) return unauthorized();
 
@@ -283,6 +305,7 @@ export class FakeBackendInterceptor implements HttpInterceptor {
         }
 
         // helper functions
+
         function ok(body?: any) {
             return of(new HttpResponse({ status: 200, body }))
                 .pipe(delay(500)); // delay observable to simulate server api call
@@ -305,6 +328,35 @@ export class FakeBackendInterceptor implements HttpInterceptor {
 
         function isAuthenticated() {
             return !!currentAccount();
+        }
+
+        function isAuthorized(role: any) {
+            const account = currentAccount();
+            if (!account) return false;
+            return account.role === role;
+        }
+
+        function idFromUrl() {
+            const urlParts = url.split('/');
+            return parseInt(urlParts[urlParts.length - 1]);
+        }
+
+        function newAccountId() {
+            return accounts.length ? Math.max(...accounts.map(x => x.id)) + 1 : 1;
+        }
+
+        function currentAccount() {
+            // check if jwt token is in auth headers
+            const authHeader = headers.get('Authorization');
+            if (!authHeader?.startsWith('Bearer fake-jwt-token')) return;
+
+            // check if token is expired
+            const jwtToken = JSON.parse(atob(authHeader.split('.')[1]));
+            const tokenExpired = Date.now() > (jwtToken.exp * 1000);
+            if (tokenExpired) return;
+
+            const account = accounts.find(x => x.id === jwtToken.id);
+            return account;
         }
 
         function generateJwtToken(account: any) {
