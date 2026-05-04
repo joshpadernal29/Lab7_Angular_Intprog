@@ -36,8 +36,8 @@ export class AlertComponent implements OnInit, OnDestroy {
             .subscribe(alert => {
                 // clear alerts when an empty alert is received
                 if (!alert.message) {
-                    this.alerts = this.alerts.filter(x => x.keepAfterRouteChange);
-                    this.alerts.forEach(x => delete x.keepAfterRouteChange);
+                    this.alerts = this.alerts.filter(x => x.keepAfterRouteChnage);
+                    this.alerts.forEach(x => delete x.keepAfterRouteChnage);
                     this.scheduleDetectChanges();
                     return;
                 }
@@ -88,10 +88,10 @@ export class AlertComponent implements OnInit, OnDestroy {
         const classes = ['alert', 'alert-dismissible', 'mt-4', 'container'];
 
         const alertTypeClass = {
-            [AlertType.success]: 'alert-success',
+            [AlertType.Success]: 'alert-success',
             [AlertType.Error]: 'alert-danger',
-            [AlertType.info]: 'alert-info',
-            [AlertType.warning]: 'alert-warning'
+            [AlertType.Info]: 'alert-info',
+            [AlertType.Warning]: 'alert-warning'
         }
         // alert
         if (alert.type !== undefined) {
