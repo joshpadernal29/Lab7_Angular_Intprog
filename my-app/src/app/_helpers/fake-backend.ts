@@ -118,7 +118,7 @@ export class FakeBackendInterceptor implements HttpInterceptor {
                         <p>If you don't know your password please visit the <a href="${location.origin}/account/forgot-password">forgot password</a> page.</p>
                         <div><strong>NOTE:</strong> The fake backend displayed this "email" so you can test without an api. A real backend would send a real email.</div>
                     `, { autoClose: false });
-                }, 100);
+                }, 1000);
 
                 // always return ok() response to prevent email enumeration
                 return ok();
