@@ -73,7 +73,11 @@ export class AddEditComponent implements OnInit, OnDestroy {
                         this.cdr.detectChanges();
                     },
                     error: error => {
-                        this.alertService.error(error);
+                        // this.alertService.error(error);
+                        // this.cdr.detectChanges();
+                        // If it's a backend error, get the message. If not, use the error itself.
+                        const msg = error.error?.message || error.message || error;
+                        this.alertService.error(msg);
                         this.cdr.detectChanges();
                     }
                 });
