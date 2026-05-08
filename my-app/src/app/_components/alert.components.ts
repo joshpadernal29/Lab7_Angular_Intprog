@@ -36,8 +36,8 @@ export class AlertComponent implements OnInit, OnDestroy {
             .subscribe(alert => {
                 // clear alerts when an empty alert is received
                 if (!alert.message) {
-                    this.alerts = this.alerts.filter(x => x.keepAfterRouteChnage);
-                    this.alerts.forEach(x => delete x.keepAfterRouteChnage);
+                    this.alerts = this.alerts.filter(x => x.keepAfterRouteChange);
+                    this.alerts.forEach(x => delete x.keepAfterRouteChange);
                     this.scheduleDetectChanges();
                     return;
                 }
