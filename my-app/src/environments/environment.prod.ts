@@ -1,5 +1,5 @@
 // environments/environment.prod.ts
 export const environment = {
     production: true,
-    apiUrl: 'http://localhost:4000'
+    apiUrl: 'https://ipt-padernal-backend.onrender.com'  // http://localhost:4000 (for local development)
 };
